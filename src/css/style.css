@@ -8,7 +8,6 @@
 }
 #IzK_Screensaver > div.body {
   background-color: #000;
-  pointer-events: none;
   cursor: none;
 }
 
