@@ -1,0 +1,22 @@
+#IzK_Screensaver {
+  z-index: 1000000000000000000000000000000000000000000000000000000;
+  pointer-events: none;
+  transition: visibility 0.4s, opacity 0.3s;
+}
+#IzK_Screensaver > div.body {
+  background-color: #000;
+  pointer-events: none;
+  cursor: none;
+}
+
+#IzK_Screensaver:not(.active),
+#IzK_Screensaver.screensaver-disabled {
+  visibility: hidden;
+  opacity: 0;
+}
+
+#IzK_Screensaver > div.body img {
+  position: fixed;
+  width: 150px;
+  height: 150px;
+}

@@ -1,0 +1,27 @@
+#IzK_ScreensaverTray {
+  display: flex;
+  align-items: center;
+}
+
+#IzK_ScreensaverTray > div {
+  padding: 10px;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+#IzK_ScreensaverTray > div input#screensaverDelay {
+  width: 60px;
+  background-color: var(--button-glass-bg) !important;
+  border: var(--button-glass-bg) 1px solid !important;
+  text-align: right;
+}
+
+#IzK_ScreensaverTray > div.delay {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  border-left: var(--button-glass-hover-bg) 1px solid;
+}
