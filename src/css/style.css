@@ -1,6 +1,5 @@
 #IzK_Screensaver {
   z-index: 1000000000000000000000000000000000000000000000000000000;
-  pointer-events: none;
   transition: visibility 0.4s, opacity 0.3s;
   position: fixed;
   top: 0;
