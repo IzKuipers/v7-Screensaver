@@ -4,12 +4,24 @@ const html = await loadHtml("html/body.html");
 const { ScreensaverTray } = await load("js/tray.js");
 
 class proc extends ThirdPartyAppProcess {
+  EVENTS = [
+    "click",
+    "keydown",
+    "keyup",
+    "keypress",
+    "mouseenter",
+    "mouseleave",
+    "mousemove",
+    "drag",
+    "focus",
+  ];
+
   constructor(handler, pid, parentPid, app, workingDirectory) {
     super(handler, pid, parentPid, app, workingDirectory);
   }
 
   async render() {
-    this.Log("Render");
+    if (await this.closeIfSecondInstance()) return;
 
     this.win = this.getWindow();
     this.body = this.getBody();
@@ -36,16 +48,26 @@ class proc extends ThirdPartyAppProcess {
       ScreensaverTray
     );
 
-    this.userPreferences.subscribe((v) => {
-      this.Log("userpref upd");
+    const preferences = this.userPreferences().appPreferences.IzK_Screensaver;
+    let previousToggleState = preferences.enable;
+    let previousDelayState = Number(preferences.delay);
 
+    this.userPreferences.subscribe((v) => {
       if (this._disposed) return;
 
-      this.timer();
-      this.win.classList.toggle(
-        "screensaver-disabled",
-        !v.appPreferences.IzK_Screensaver.enable
-      );
+      if (previousToggleState !== v.appPreferences.IzK_Screensaver.enable) {
+        previousToggleState = v.appPreferences.IzK_Screensaver.enable;
+
+        this.win.classList.toggle(
+          "screensaver-disabled",
+          !v.appPreferences.IzK_Screensaver.enable
+        );
+        this.timer();
+      } else if (
+        previousDelayState !== v.appPreferences.IzK_Screensaver.delay
+      ) {
+        this.timer();
+      }
     });
 
     this.checkStartup();
@@ -58,21 +80,14 @@ class proc extends ThirdPartyAppProcess {
 
     if (this._disposed) return;
 
-    document.body.addEventListener("click", () => this.timer());
-    document.body.addEventListener("keydown", () => this.timer());
-    document.body.addEventListener("keyup", () => this.timer());
-    document.body.addEventListener("keypress", () => this.timer());
-    document.body.addEventListener("mouseenter", () => this.timer());
-    document.body.addEventListener("mouseleave", () => this.timer());
-    document.body.addEventListener("mousemove", () => this.timer());
-    document.body.addEventListener("drag", () => this.timer());
-    document.body.addEventListener("focus", () => this.timer());
+    for (const event of EVENTS) {
+      document.addEventListener(event, () => this.timer());
+    }
 
     this.timer();
   }
 
   timer() {
-    this.Log("Timer");
     if (this._disposed) return;
 
     clearTimeout(this.timeout);
@@ -101,6 +116,10 @@ class proc extends ThirdPartyAppProcess {
   async onClose() {
     clearInterval(this.interval);
     clearTimeout(this.timeout);
+
+    for (const event of this.EVENTS) {
+      document.removeEventListener(event, () => this.timer());
+    }
 
     return true;
   }

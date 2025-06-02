@@ -3,7 +3,7 @@
     "name": "Screensaver",
     "description": "Adds a screensaver to ArcOS",
     "author": "Izaak Kuipers",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "installLocation": "U:/Applications/IzK_Screensaver",
     "appId": "IzK_Screensaver"
   },
