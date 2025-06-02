@@ -6,10 +6,16 @@
   top: 0;
   left: 0;
   display: block !important;
+  cursor: none !important;
 }
+
+#IzK_Screensaver,
+#IzK_Screensaver * {
+  cursor: none !important;
+}
+
 #IzK_Screensaver > div.body {
   background-color: #000;
-  cursor: none;
 }
 
 #IzK_Screensaver:not(.active),
