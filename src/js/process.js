@@ -76,6 +76,7 @@ class proc extends ThirdPartyAppProcess {
       } else if (
         previousDelayState !== v.appPreferences.IzK_Screensaver.delay
       ) {
+        previousDelayState = v.appPreferences.IzK_Screensaver.delay;
         this.timer();
       }
     });
