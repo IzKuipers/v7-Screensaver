@@ -80,7 +80,7 @@ class proc extends ThirdPartyAppProcess {
 
     if (this._disposed) return;
 
-    for (const event of EVENTS) {
+    for (const event of this.EVENTS) {
       document.addEventListener(event, () => this.timer());
     }
 
