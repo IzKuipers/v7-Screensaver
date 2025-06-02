@@ -20,10 +20,14 @@ class proc extends ThirdPartyAppProcess {
     super(handler, pid, parentPid, app, workingDirectory);
   }
 
-  async render() {
+  async start() {
     if (await this.closeIfSecondInstance()) return;
+  }
 
+  async render() {
     this.win = this.getWindow();
+    this.win.style.display = "none";
+
     this.body = this.getBody();
     this.body.innerHTML = html;
 
