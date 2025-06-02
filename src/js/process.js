@@ -21,7 +21,13 @@ class proc extends ThirdPartyAppProcess {
   }
 
   async start() {
-    if (await this.closeIfSecondInstance()) return;
+    if (
+      !this.workingDirectory.startsWith("V:/") &&
+      !navigator.userAgent.toLowerCase().includes("electron")
+    )
+      return false;
+
+    if (await this.closeIfSecondInstance()) return false;
   }
 
   async render() {
@@ -100,6 +106,7 @@ class proc extends ThirdPartyAppProcess {
 
     this.timeout = setTimeout(() => {
       this.Log("Blanking");
+      this.lockscreen();
       this.win.classList.add("active");
     }, this.getDelay()); // 30 seconds
   }
@@ -172,6 +179,14 @@ class proc extends ThirdPartyAppProcess {
       +env.get("shell_pid"),
       true
     );
+  }
+
+  lockscreen() {
+    const screenlocker = this.handler.getProcess(
+      +env.get("izk_screenlocker_pid")
+    );
+
+    if (!this.userDaemon?._elevating) screenlocker?.show();
   }
 }
 
