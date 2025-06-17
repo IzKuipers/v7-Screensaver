@@ -8,6 +8,8 @@
 ///
 
 declare global {
+  export const __Console__: Console;
+
   export const ASCII_ART: string[];
 
   export const LINES: string[];
@@ -73,9 +75,11 @@ declare global {
 
   export const ShortLogLevelCaptions: Record<LogLevel, string>;
 
-  export const ArcOSVersion = "7.0.0";
+  export const ArcOSVersion = "7.0.3";
 
   export const VALIDATION_STR = "thisWonderfulArcOSServerIdentifiedByTheseWordsPleaseDontSteal(c)IzKuipers";
+
+  export const BETA = true;
 
   export function Log(source: string, message: string, level?: LogLevel): void;
 
@@ -107,18 +111,6 @@ declare global {
       reset(): void;
   }
 
-  export function arrayToText(buffer: ArrayLike<number> | ArrayBufferLike): string;
-
-  export function textToArrayBuffer(text: string): ArrayBuffer;
-
-  export function blobToText(blob: Blob): Promise<string>;
-
-  export function textToBlob(text: string, type?: string): Blob;
-
-  export function arrayToBlob(buffer: ArrayBuffer, type?: string): Blob;
-
-  export function blobToDataURL(blob: Blob): Promise<string | undefined>;
-
   export type DispatchCallback = (...args: any[]) => any;
 
   export type SystemDispatchResult = "success" | "err_systemOnly" | "err_unknownCaller";
@@ -143,6 +135,18 @@ declare global {
       dispatch<T = any[]>(caller: string, data?: T, system?: boolean): SystemDispatchResult;
   }
 
+  export function arrayToText(buffer: ArrayLike<number> | ArrayBufferLike): string;
+
+  export function textToArrayBuffer(text: string): ArrayBuffer;
+
+  export function blobToText(blob: Blob): Promise<string>;
+
+  export function textToBlob(text: string, type?: string): Blob;
+
+  export function arrayToBlob(buffer: ArrayBuffer, type?: string): Blob;
+
+  export function blobToDataURL(blob: Blob): Promise<string | undefined>;
+
   export const sizeUnits: string[];
 
   export function join(...args: string[]): string;
@@ -163,17 +167,14 @@ declare global {
 
   export function DownloadFile(file: ArrayBuffer, filename: string, mimetype?: string): void;
 
-  export function tryJsonParse<T = any>(input: any): T;
-
-  export function tryJsonStringify(input: any, indent: number): string;
-
-  export function keysToLowerCase(obj: any): any;
-
-  export type ValidationObject = {
-      [key: string]: any;
-  };
-
-  export function validateObject(target: ValidationObject, validation: ValidationObject): boolean;
+  export class ThirdPartyAppProcess extends AppProcess {
+      static readonly TPA_REV = 1;
+      workingDirectory: string;
+      mutationLock: boolean;
+      urlCache: Record<string, string>;
+      constructor(handler: ProcessHandler, pid: number, parentPid: number, app: AppProcessData, workingDirectory: string, ...args: any[]);
+      __render__(body: HTMLDivElement): Promise<void>;
+  }
 
   export const Sleep: (ms?: number) => Promise<unknown>;
 
@@ -221,155 +222,6 @@ declare global {
 
   export function sortByHierarchy(array: any[], hierarchy: string): any[];
 
-  export class ThirdPartyAppProcess extends AppProcess {
-      static readonly TPA_REV = 1;
-      workingDirectory: string;
-      mutationLock: boolean;
-      urlCache: Record<string, string>;
-      constructor(handler: ProcessHandler, pid: number, parentPid: number, app: AppProcessData, workingDirectory: string, ...args: any[]);
-      __render__(body: HTMLDivElement): Promise<void>;
-  }
-
-  export type MaybePromise<T> = T | Promise<T>;
-
-  export interface App {
-      metadata: AppMetadata;
-      size: Size;
-      minSize: Size;
-      maxSize: Size;
-      position: MaybeCenteredPosition;
-      state: AppState;
-      controls: WindowControls;
-      assets: AppAssets;
-      autoRun?: boolean;
-      core?: boolean;
-      hidden?: boolean;
-      overlay?: boolean;
-      glass?: boolean;
-      thirdParty?: false;
-      id: string;
-      originId?: string;
-      entrypoint?: string;
-      workingDirectory?: string;
-      opens?: {
-          extensions?: string[];
-          mimeTypes?: string[];
-      };
-      elevated?: boolean;
-      acceleratorDescriptions?: Record<string, string>;
-      fileSignatures?: Record<string, string>;
-      process?: ThirdPartyAppProcess;
-      tpaRevision?: number;
-      noSafeMode?: boolean;
-      vital?: boolean;
-  }
-
-  export type RegisteredProcess = {
-      metadata: AppMetadata;
-      id: string;
-      assets: {
-          runtime: typeof Process;
-      };
-      vital?: boolean;
-  };
-
-  export interface InstalledApp extends App {
-      metadata: AppMetadata;
-      tpaPath: string;
-  }
-
-  export type ScriptedApp = Omit<App, "assets">;
-
-  export interface AppMetadata {
-      name: string;
-      version: string;
-      author: string;
-      icon: string;
-      appGroup?: string;
-  }
-
-  export interface AppState {
-      resizable: boolean;
-      minimized: boolean;
-      maximized: boolean;
-      fullscreen: boolean;
-      headless: boolean;
-  }
-
-  export interface WindowControls {
-      minimize: boolean;
-      maximize: boolean;
-      close: boolean;
-  }
-
-  export interface AppAssets {
-      runtime: typeof Process;
-      component?: typeof SvelteComponent;
-  }
-
-  export interface AppComponentProps<T = AppProcess> {
-      process: T;
-      pid: number;
-      kernel: WaveKernel;
-      handler: ProcessHandler;
-      app: App;
-      windowTitle: ReadableStore<string>;
-      windowIcon: ReadableStore<string>;
-  }
-
-  export type Size = {
-      w: number;
-      h: number;
-  };
-
-  export type Position = {
-      x: number;
-      y: number;
-  };
-
-  export type MaybeCenteredPosition = Partial<Position> & {
-      centered?: boolean;
-  };
-
-  export type AppProcessData = {
-      data: App;
-      id: string;
-      desktop?: string;
-  };
-
-  export type AppStorage = ((App | InstalledApp) & {
-      originId?: string;
-  })[];
-
-  export type AppStoreCb = () => MaybePromise<AppStorage>;
-
-  export interface ContextMenuItem {
-      sep?: boolean;
-      caption?: string;
-      icon?: string;
-      image?: string;
-      isActive?: ContextMenuCallback<boolean>;
-      action?: ContextMenuCallback;
-      subItems?: ContextMenuItem[];
-      disabled?: ContextMenuCallback<boolean>;
-      accelerator?: string;
-  }
-
-  export type ContextMenuCallback<T = any> = (...args: any[]) => MaybePromise<T>;
-
-  export type AppContextMenu = {
-      [key: string]: ContextMenuItem[];
-  };
-
-  export interface ContextMenuInstance {
-      x: number;
-      y: number;
-      items: ContextMenuItem[];
-      process?: AppProcess;
-      artificial?: boolean;
-      props?: any[];
-  }
-
   export interface ArcShortcut {
       icon: string;
       name: string;
@@ -393,6 +245,7 @@ declare global {
   export interface FsAccess {
       _id?: string;
       userId: string;
+      shareId?: string;
       path: string;
       accessor: string;
       createdAt?: Date;
@@ -626,30 +479,156 @@ declare global {
       unlockFile(path: string): Promise<false | undefined>;
   }
 
-  export interface UserTheme {
-      author: string;
-      version: string;
-      name: string;
-      taskbarLabels: boolean;
-      taskbarDocked: boolean;
-      taskbarColored: boolean;
-      noAnimations: boolean;
-      sharpCorners: boolean;
-      compactContext: boolean;
-      noGlass: boolean;
-      desktopWallpaper: string;
-      desktopTheme: string;
-      desktopAccent: string;
-      loginBackground?: string;
+  export type MaybePromise<T> = T | Promise<T>;
+
+  export interface App {
+      metadata: AppMetadata;
+      size: Size;
+      minSize: Size;
+      maxSize: Size;
+      position: MaybeCenteredPosition;
+      state: AppState;
+      controls: WindowControls;
+      assets: AppAssets;
+      autoRun?: boolean;
+      core?: boolean;
+      hidden?: boolean;
+      overlay?: boolean;
+      glass?: boolean;
+      thirdParty?: false;
+      id: string;
+      originId?: string;
+      entrypoint?: string;
+      workingDirectory?: string;
+      opens?: {
+          extensions?: string[];
+          mimeTypes?: string[];
+      };
+      elevated?: boolean;
+      acceleratorDescriptions?: Record<string, string>;
+      fileSignatures?: Record<string, string>;
+      process?: ThirdPartyAppProcess;
+      tpaRevision?: number;
+      noSafeMode?: boolean;
+      vital?: boolean;
   }
 
-  export type UserThemeNoMeta = Omit<Omit<Omit<UserTheme, "author">, "version">, "name">;
-
-  export type ThemeStore = {
-      [key: string]: UserTheme;
+  export type RegisteredProcess = {
+      metadata: AppMetadata;
+      id: string;
+      assets: {
+          runtime: typeof Process;
+      };
+      vital?: boolean;
   };
 
-  export const UserThemeKeys: string[];
+  export interface InstalledApp extends App {
+      metadata: AppMetadata;
+      tpaPath: string;
+  }
+
+  export type ScriptedApp = Omit<App, "assets">;
+
+  export interface AppMetadata {
+      name: string;
+      version: string;
+      author: string;
+      icon: string;
+      appGroup?: string;
+  }
+
+  export interface AppState {
+      resizable: boolean;
+      minimized: boolean;
+      maximized: boolean;
+      fullscreen: boolean;
+      headless: boolean;
+  }
+
+  export interface WindowControls {
+      minimize: boolean;
+      maximize: boolean;
+      close: boolean;
+  }
+
+  export interface AppAssets {
+      runtime: typeof Process;
+      component?: typeof SvelteComponent;
+  }
+
+  export interface AppComponentProps<T = AppProcess> {
+      process: T;
+      pid: number;
+      kernel: WaveKernel;
+      handler: ProcessHandler;
+      app: App;
+      windowTitle: ReadableStore<string>;
+      windowIcon: ReadableStore<string>;
+  }
+
+  export type Size = {
+      w: number;
+      h: number;
+  };
+
+  export type Position = {
+      x: number;
+      y: number;
+  };
+
+  export type MaybeCenteredPosition = Partial<Position> & {
+      centered?: boolean;
+  };
+
+  export type AppProcessData = {
+      data: App;
+      id: string;
+      desktop?: string;
+  };
+
+  export type AppStorage = ((App | InstalledApp) & {
+      originId?: string;
+  })[];
+
+  export type AppStoreCb = () => MaybePromise<AppStorage>;
+
+  export interface ContextMenuItem {
+      sep?: boolean;
+      caption?: string;
+      icon?: string;
+      image?: string;
+      isActive?: ContextMenuCallback<boolean>;
+      action?: ContextMenuCallback;
+      subItems?: ContextMenuItem[];
+      disabled?: ContextMenuCallback<boolean>;
+      accelerator?: string;
+  }
+
+  export type ContextMenuCallback<T = any> = (...args: any[]) => MaybePromise<T>;
+
+  export type AppContextMenu = {
+      [key: string]: ContextMenuItem[];
+  };
+
+  export interface ContextMenuInstance {
+      x: number;
+      y: number;
+      items: ContextMenuItem[];
+      process?: AppProcess;
+      artificial?: boolean;
+      props?: any[];
+  }
+
+  export interface WindowResizer {
+      className: string;
+      cursor: string;
+      width: string;
+      height: string;
+      top?: string;
+      bottom?: string;
+      left?: string;
+      right?: string;
+  }
 
   export interface MessageBoxData {
       title: string;
@@ -682,6 +661,208 @@ declare global {
   export function MessageBox(data: MessageBoxData, parentPid: number, overlay?: boolean): Promise<void>;
 
   export function GetConfirmation(data: ConfirmationData, parentPid: number, overlay?: boolean): Promise<boolean>;
+
+  export interface SearchItem {
+      caption: string;
+      action: (item?: SearchItem) => void;
+      image?: string;
+      description?: string;
+  }
+
+  export type SearchProvider = () => Promise<SearchItem[]> | SearchItem[];
+
+  export interface UserTheme {
+      author: string;
+      version: string;
+      name: string;
+      taskbarLabels: boolean;
+      taskbarDocked: boolean;
+      taskbarColored: boolean;
+      noAnimations: boolean;
+      sharpCorners: boolean;
+      compactContext: boolean;
+      noGlass: boolean;
+      desktopWallpaper: string;
+      desktopTheme: string;
+      desktopAccent: string;
+      loginBackground?: string;
+  }
+
+  export type UserThemeNoMeta = Omit<Omit<Omit<UserTheme, "author">, "version">, "name">;
+
+  export type ThemeStore = {
+      [key: string]: UserTheme;
+  };
+
+  export const UserThemeKeys: string[];
+
+  export interface Wallpaper {
+      author: string;
+      name: string;
+      source?: string;
+      url: string;
+      thumb: string;
+      builtin?: boolean;
+  }
+
+  export interface UserInfo {
+      username: string;
+      preferences: UserPreferences;
+      admin: boolean;
+      adminScopes: string[];
+      approved: boolean;
+      _id: string;
+      email: string;
+      updatedAt: string;
+      createdAt: string;
+      hasTotp: boolean;
+      restricted: boolean;
+      accountNumber: number;
+      storageSize: number;
+  }
+
+  export type UserPreferencesStore = ReadableStore<UserPreferences>;
+
+  export interface UserPreferences {
+      shell: ShellPreferences;
+      security: SecurityPreferences;
+      appPreferences: ApplicationPreferences;
+      account: AccountSettings;
+      isDefault?: boolean;
+      desktop: DesktopPreferences;
+      userThemes: ThemeStore;
+      userWallpapers: Record<string, Wallpaper>;
+      userApps: Record<string, App>;
+      currentThemeId?: string;
+      searchOptions: ArcFindOptions;
+      pinnedApps: string[];
+      disabledApps: string[];
+      workspaces: WorkspacesOptions;
+      globalSettings: Record<string, any>;
+      startup?: Record<string, "app" | "file" | "folder" | "share" | "disabled">;
+  }
+
+  export type ExpandedUserInfo = UserInfo & {
+      profile: PublicUserInfo;
+  };
+
+  export interface WorkspacesOptions {
+      desktops: Workspace[];
+      index: number;
+  }
+
+  export interface Workspace {
+      name?: string;
+      uuid: string;
+  }
+
+  export interface ArcFindOptions {
+      includeFilesystem: boolean;
+      includeSettingsPages: boolean;
+      includeApps: boolean;
+      includePower: boolean;
+      cacheFilesystem: boolean;
+      showHiddenApps: boolean;
+      showThirdPartyApps: boolean;
+  }
+
+  export interface CustomStylePreferences {
+      enabled: boolean;
+      content?: string;
+  }
+
+  export interface ShellPreferences {
+      taskbar: TaskbarPreferences;
+      start: StartMenuPreferences;
+      visuals: VisualPreferences;
+      customStyle: CustomStylePreferences;
+      actionCenter: {
+          weatherLocation: {
+              latitude: number;
+              longitude: number;
+              name?: string;
+          };
+          noteContent: string;
+          galleryImage: string;
+          cardIndex: number;
+          hideQuickSettings: boolean;
+      };
+  }
+
+  export interface TaskbarPreferences {
+      labels: boolean;
+      docked: boolean;
+      colored: boolean;
+      clockSecs: boolean;
+      clockDate: boolean;
+      clock12hr: boolean;
+      batteryPercentage: boolean;
+  }
+
+  export interface DesktopPreferences {
+      wallpaper: string;
+      icons: boolean;
+      theme: "light" | "dark" | string;
+      sharp: boolean;
+      accent: string;
+      noIconGrid: boolean;
+      lockIcons: boolean;
+  }
+
+  export interface StartMenuPreferences {
+      noGroups: boolean;
+  }
+
+  export interface VisualPreferences {
+      noAnimations: boolean;
+      sharpCorners: boolean;
+      compactContext: boolean;
+      showHiddenApps: boolean;
+      noGlass: boolean;
+      userFont?: string;
+  }
+
+  export interface SecurityPreferences {
+      lockdown: boolean;
+      noPassword: boolean;
+      disabled: boolean;
+      enableThirdParty: boolean;
+  }
+
+  export interface AccountSettings {
+      profilePicture: string | number | null;
+      loginBackground: string;
+      displayName?: string;
+  }
+
+  export interface ApplicationPreferences {
+      experiments: {
+          [key: string]: boolean;
+      };
+      [key: string]: ScopedAppData;
+  }
+
+  export type ScopedAppData = {
+      [key: string]: any;
+  };
+
+  export type WallpaperGetters = [
+      string,
+      (id: string) => Wallpaper | Promise<Wallpaper>
+  ][];
+
+  export type PasswordStrength = "tooWeak" | "weak" | "medium" | "strong";
+
+  export const PasswordStrengthCaptions: Record<PasswordStrength, string>;
+
+  export interface PublicUserInfo {
+      username: string;
+      displayName?: string;
+      profilePicture: string;
+      accountNumber: number;
+      admin: boolean;
+      dispatchClients: number;
+  }
 
   export interface TypedProcess {
       start?: () => any;
@@ -793,6 +974,18 @@ declare global {
       component: Component;
       hidden?: boolean;
   }
+
+  export function tryJsonParse<T = any>(input: any): T;
+
+  export function tryJsonStringify(input: any, indent: number): string;
+
+  export function keysToLowerCase(obj: any): any;
+
+  export type ValidationObject = {
+      [key: string]: any;
+  };
+
+  export function validateObject(target: ValidationObject, validation: ValidationObject): boolean;
 
   export class BaseService extends Process {
       host: ServiceHost;
@@ -1079,10 +1272,14 @@ declare global {
       token: string;
       userAgent: string;
       location: Location;
-      action: string;
+      action: "unknown" | "login" | "logout";
       createdAt?: Date;
       _id: string;
   }
+
+  export type ExpandedActivity = Activity & {
+      user?: ExpandedUserInfo;
+  };
 
   export interface Approval {
       username: string;
@@ -1094,6 +1291,7 @@ declare global {
   }
 
   export interface AuditLog {
+      _id: string;
       authorId: string;
       message: string;
       severity: AuditSeverity;
@@ -1108,6 +1306,14 @@ declare global {
       high = 2,
       critical = 3,
       deadly = 4
+  }
+
+  export enum AuditSeverityIcons {
+      moon = 0,
+      "shield-checkc" = 1,
+      "shield-ellipsis" = 2,
+      "shield-x" = 3,
+      siren = 4
   }
 
   export interface FsAccess {
@@ -1138,6 +1344,10 @@ declare global {
       timesUsed?: number;
       userAgent?: string;
   }
+
+  export type ExpandedToken = Token & {
+      user?: ExpandedUserInfo;
+  };
 
   export interface User {
       username: string;
@@ -1225,172 +1435,72 @@ declare global {
       tokens: number;
   }
 
-  export interface Wallpaper {
-      author: string;
-      name: string;
-      source?: string;
-      url: string;
-      thumb: string;
-      builtin?: boolean;
-  }
-
-  export interface UserInfo {
-      username: string;
-      preferences: UserPreferences;
-      admin: boolean;
-      adminScopes: string[];
-      approved: boolean;
-      _id: string;
-      email: string;
-      updatedAt: string;
-      createdAt: string;
-      hasTotp: boolean;
-      restricted: boolean;
-      accountNumber: number;
-  }
-
-  export type UserPreferencesStore = ReadableStore<UserPreferences>;
-
-  export interface UserPreferences {
-      shell: ShellPreferences;
-      security: SecurityPreferences;
-      appPreferences: ApplicationPreferences;
-      account: AccountSettings;
-      isDefault?: boolean;
-      desktop: DesktopPreferences;
-      userThemes: ThemeStore;
-      userWallpapers: Record<string, Wallpaper>;
-      userApps: Record<string, App>;
-      currentThemeId?: string;
-      searchOptions: ArcFindOptions;
-      pinnedApps: string[];
-      disabledApps: string[];
-      workspaces: WorkspacesOptions;
-      globalSettings: Record<string, any>;
-      startup?: Record<string, "app" | "file" | "folder" | "share" | "disabled">;
-  }
-
-  export type ExpandedUserInfo = UserInfo & {
-      profile: PublicUserInfo;
+  export const AdminScopes: {
+      adminGod: string;
+      adminAuditLog: string;
+      adminLogs: string;
+      adminGrant: string;
+      adminRevoke: string;
+      adminPreferencesGet: string;
+      adminUserfsFolder: string;
+      adminUserfsFile: string;
+      adminUserfsDirect: string;
+      adminUserfsTree: string;
+      adminUserfsQuota: string;
+      adminPreferencesPut: string;
+      adminUsersList: string;
+      adminUsersDelete: string;
+      adminUsersChangePswd: string;
+      adminUsersChangeEmail: string;
+      adminUsersApprove: string;
+      adminUsersDisapprove: string;
+      adminStats: string;
+      adminTokensGet: string;
+      adminTokensPurgeAllDelete: string;
+      adminTokensPurgeUserDelete: string;
+      adminTokensPurgeOneDelete: string;
+      adminScopesPut: string;
+      adminScopesGet: string;
+      adminScopesAvailable: string;
+      adminBugHuntList: string;
+      adminBugHuntClose: string;
+      adminBugHuntOpen: string;
+      adminBugHuntGet: string;
+      adminBugHuntDelete: string;
+      adminBugHuntStats: string;
+      adminActivitiesList: string;
+      adminActivitiesUserGet: string;
+      adminActivitiesDelete: string;
+      adminActivitiesDeleteUser: string;
+      adminTotpGet: string;
+      adminTotpGetUser: string;
+      adminTotpDeactivateUser: string;
+      adminTotpDeleteUser: string;
+      adminAccessorsGet: string;
+      adminAccessorsGetUser: string;
+      adminAccessorsDelete: string;
+      adminAccessorsDeleteUser: string;
+      adminIndexGet: string;
+      adminIndexGetUser: string;
+      adminIndexUser: string;
+      adminIndexDeleteUser: string;
+      adminShareInteract: string;
+      adminShareList: string;
+      adminShareListUser: string;
+      adminShareDelete: string;
+      adminShareMembersGet: string;
+      adminShareKick: string;
+      adminShareAddUser: string;
+      adminShareAccessorsGet: string;
+      adminShareAccessorsDelete: string;
+      adminShareChangePswd: string;
+      adminShareRename: string;
+      adminShareChown: string;
+      adminShareQuotaGet: string;
+      adminShareQuotaPut: string;
   };
 
-  export interface WorkspacesOptions {
-      desktops: Workspace[];
-      index: number;
-  }
-
-  export interface Workspace {
-      name?: string;
-      uuid: string;
-  }
-
-  export interface ArcFindOptions {
-      includeFilesystem: boolean;
-      includeSettingsPages: boolean;
-      includeApps: boolean;
-      includePower: boolean;
-      cacheFilesystem: boolean;
-      showHiddenApps: boolean;
-      showThirdPartyApps: boolean;
-  }
-
-  export interface CustomStylePreferences {
-      enabled: boolean;
-      content?: string;
-  }
-
-  export interface ShellPreferences {
-      taskbar: TaskbarPreferences;
-      start: StartMenuPreferences;
-      visuals: VisualPreferences;
-      customStyle: CustomStylePreferences;
-      actionCenter: {
-          weatherLocation: {
-              latitude: number;
-              longitude: number;
-              name?: string;
-          };
-          noteContent: string;
-          galleryImage: string;
-          cardIndex: number;
-          hideQuickSettings: boolean;
-      };
-  }
-
-  export interface TaskbarPreferences {
-      labels: boolean;
-      docked: boolean;
-      colored: boolean;
-      clockSecs: boolean;
-      clockDate: boolean;
-      clock12hr: boolean;
-      batteryPercentage: boolean;
-  }
-
-  export interface DesktopPreferences {
-      wallpaper: string;
-      icons: boolean;
-      theme: "light" | "dark" | string;
-      sharp: boolean;
-      accent: string;
-      noIconGrid: boolean;
-      lockIcons: boolean;
-  }
-
-  export interface StartMenuPreferences {
-      noGroups: boolean;
-  }
-
-  export interface VisualPreferences {
-      noAnimations: boolean;
-      sharpCorners: boolean;
-      compactContext: boolean;
-      showHiddenApps: boolean;
-      noGlass: boolean;
-      userFont?: string;
-  }
-
-  export interface SecurityPreferences {
-      lockdown: boolean;
-      noPassword: boolean;
-      disabled: boolean;
-      enableThirdParty: boolean;
-  }
-
-  export interface AccountSettings {
-      profilePicture: string | number | null;
-      loginBackground: string;
-      displayName?: string;
-  }
-
-  export interface ApplicationPreferences {
-      experiments: {
-          [key: string]: boolean;
-      };
-      [key: string]: ScopedAppData;
-  }
-
-  export type ScopedAppData = {
-      [key: string]: any;
-  };
-
-  export type WallpaperGetters = [
-      string,
-      (id: string) => Wallpaper | Promise<Wallpaper>
-  ][];
-
-  export type PasswordStrength = "tooWeak" | "weak" | "medium" | "strong";
-
-  export const PasswordStrengthCaptions: Record<PasswordStrength, string>;
-
-  export interface PublicUserInfo {
-      username: string;
-      displayName?: string;
-      profilePicture: string;
-      accountNumber: number;
-      admin: boolean;
-      dispatchClients: number;
-  }
+  export const AdminScopeCaptions: Record<string, string>;
 
   export class AdminBootstrapper extends BaseService {
       private token;
@@ -1400,7 +1510,7 @@ declare global {
       activate(token: string): Promise<void>;
       afterActivate(): Promise<void>;
       getUserInfo(): Promise<UserInfo | undefined>;
-      mountUserDrive(username: string, driveLetter?: string, onProgress?: FilesystemProgressCallback): Promise<void>;
+      mountUserDrive(username: string, driveLetter?: string, onProgress?: FilesystemProgressCallback): Promise<false | FilesystemDrive>;
       mountAllUsers(): Promise<void>;
       getAllUsers(): Promise<ExpandedUserInfo[]>;
       getUserByUsername(username: string): Promise<UserInfo | undefined>;
@@ -1448,6 +1558,7 @@ declare global {
       forceIndexFor(username: string): Promise<string[]>;
       deleteIndexingOf(username: string): Promise<boolean>;
       canAccess(...scopes: string[]): boolean;
+      canAccessP(provided: UserInfo, ...scopes: string[]): boolean;
       getMissingScopes(...scopes: string[]): string[];
       getAllShares(): Promise<SharedDriveType[]>;
       getSharesOf(userId: string): Promise<SharedDriveType[]>;
@@ -1460,6 +1571,10 @@ declare global {
       renameShare(shareId: string, newName: string): Promise<boolean>;
       changeShareOwner(shareId: string, newUserId: string): Promise<boolean>;
       getStatisticsOf(userId: string): Promise<UserStatistics | undefined>;
+      setShareQuotaOf(shareId: string, quota: number): Promise<boolean>;
+      getShareQuotaOf(shareId: string): Promise<UserQuota | undefined>;
+      unlockShare(shareId: string): Promise<boolean>;
+      lockShare(shareId: string): Promise<boolean>;
   }
 
   export const adminService: Service;
@@ -1636,6 +1751,7 @@ declare global {
       hidden?: boolean;
       separator?: boolean;
       scopes?: string[];
+      parent?: string;
       props?: (process: AdminPortalRuntime) => Promise<Record<string, any>> | Record<string, any>;
   }
 
@@ -1664,11 +1780,67 @@ declare global {
 
   export type ViewUserData = {
       user: ExpandedUserInfo;
+      reports: BugReport[];
   };
+
+  export type SharesData = {
+      shares: SharedDriveType[];
+      users: ExpandedUserInfo[];
+  };
+
+  export type ViewShareData = {
+      share: SharedDriveType;
+      accessors: FsAccess[];
+      users: ExpandedUserInfo[];
+  };
+
+  export type FilesystemsData = {
+      users: ExpandedUserInfo[];
+  };
+
+  export type TokensData = {
+      tokens: ExpandedToken[];
+      users: ExpandedUserInfo[];
+  };
+
+  export type ActivitiesData = {
+      activities: Activity[];
+      users: ExpandedUserInfo[];
+  };
+
+  export type ScopesData = {
+      admins: ExpandedUserInfo[];
+  };
+
+  export type ViewScopesData = {
+      admin: ExpandedUserInfo;
+      scopes: Record<string, string>;
+  };
+
+  export type AuditLogData = {
+      users: ExpandedUserInfo[];
+      audits: AuditLog[];
+  };
+
+  export type UsersPageFilters = "all" | "regular" | "admins" | "disapproved" | "online";
+
+  export type SharesPageFilters = "all" | "resized" | "locked";
+
+  export interface SpecificAdminAction {
+      caption: string;
+      scopes: string[];
+      className?: string;
+      disabled?: (user: UserInfo) => boolean;
+      separate?: boolean;
+  }
+
+  export type SpecificAdminActions = Record<string, SpecificAdminAction>;
 
   export const AdminPortalPageStore: AdminPortalPages;
 
   export const LogoTranslations: Record<string, string>;
+
+  export const specificAdminActions: SpecificAdminActions;
 
   export class BugHuntUserDataRuntime extends AppProcess {
       data: UserInfo;
@@ -1683,6 +1855,8 @@ declare global {
       ready: ReadableStore<boolean>;
       currentPage: ReadableStore<string>;
       switchPageProps: ReadableStore<Record<string, any>>;
+      redacted: ReadableStore<boolean>;
+      shares: ShareManager;
       admin: AdminBootstrapper;
       protected overlayStore: Record<string, App>;
       constructor(handler: ProcessHandler, pid: number, parentPid: number, app: AppProcessData, page?: string);
@@ -1726,6 +1900,7 @@ declare global {
       targetApp: ReadableStore<App>;
       targetAppId: string;
       constructor(handler: ProcessHandler, pid: number, parentPid: number, app: AppProcessData, appId: string);
+      start(): Promise<false | undefined>;
       render(): Promise<void>;
       killAll(): Promise<void>;
       processManager(): Promise<void>;
@@ -1754,8 +1929,8 @@ declare global {
       completed: ReadableStore<boolean>;
       focused: ReadableStore<string>;
       verboseLog: string[];
-      metadata: ArcPackage;
-      zip: JSZip;
+      metadata?: ArcPackage;
+      zip?: JSZip;
       constructor(handler: ProcessHandler, pid: number, parentPid: number, app: AppProcessData, metadata: ReadableStore<ArcPackage>, zip: JSZip);
       start(): Promise<false | undefined>;
       render(): Promise<void>;
@@ -1787,12 +1962,15 @@ declare global {
       zip: JSZip | undefined;
       metadata: ReadableStore<ArcPackage>;
       constructor(handler: ProcessHandler, pid: number, parentPid: number, app: AppProcessData, pkgPath: string);
+      start(): Promise<false | undefined>;
       render(): Promise<void>;
       fail(reason: string): void;
       install(): Promise<void>;
   }
 
   export const AppPreinstallApp: App;
+
+  export const ArcFind: App;
 
   export function WindowSystemContextMenu(runtime: ContextMenuRuntime): AppContextMenu;
 
@@ -1883,13 +2061,14 @@ declare global {
   export function maybeIconId(id: string): string;
 
   export class IconPickerRuntime extends AppProcess {
-      forWhat: string;
-      defaultIcon: string;
+      forWhat?: string;
+      defaultIcon?: string;
       selected: ReadableStore<string>;
       groups: Record<string, Record<string, string>>;
       store: Record<string, string>;
-      returnId: string;
+      returnId?: string;
       constructor(handler: ProcessHandler, pid: number, parentPid: number, app: AppProcessData, data: IconPickerData);
+      start(): Promise<false | undefined>;
       confirm(): Promise<void>;
       cancel(): Promise<void>;
   }
@@ -1922,6 +2101,7 @@ declare global {
       drive: FilesystemDrive | undefined;
       isDrive: boolean;
       constructor(handler: ProcessHandler, pid: number, parentPid: number, app: AppProcessData, path: string, file: FileEntry | FolderEntry);
+      start(): Promise<false | undefined>;
       render({ path, file }: RenderArgs): Promise<void>;
       open(): Promise<void>;
       openWith(path: string): Promise<void>;
@@ -1965,8 +2145,9 @@ declare global {
       filename: ReadableStore<string>;
       path: ReadableStore<string>;
       selectedId: ReadableStore<string>;
-      viewMode: ReadableStore<"apps" | "all" | "compatible">;
+      viewMode: ReadableStore<"all" | "apps" | "compatible">;
       constructor(handler: ProcessHandler, pid: number, parentPid: number, app: AppProcessData, path: string);
+      start(): Promise<false | undefined>;
       render({ path }: RenderArgs): Promise<void>;
       go(id?: string): Promise<void>;
   }
@@ -1984,6 +2165,7 @@ declare global {
       password: ReadableStore<string>;
       loading: ReadableStore<boolean>;
       constructor(handler: ProcessHandler, pid: number, parentPid: number, app: AppProcessData, id: string, key: string, data: ElevationData);
+      start(): Promise<false | undefined>;
       render(): Promise<void>;
       validate(): Promise<boolean | undefined>;
       approve(): Promise<void>;
@@ -2189,6 +2371,14 @@ declare global {
       className?: string;
   }
 
+  export interface QuickSetting {
+      isActive: (process: ShellRuntime) => boolean | Promise<boolean>;
+      action: (process: ShellRuntime) => any;
+      icon: string;
+      className?: string;
+      caption: string;
+  }
+
   export type TrayIconDiscriminator = `${number}#${string}`;
 
   export class TrayIconProcess extends Process {
@@ -2209,9 +2399,10 @@ declare global {
 
   export class TrayHostRuntime extends Process {
       userDaemon: UserDaemon | undefined;
-      userPreferences: UserPreferencesStore;
+      userPreferences?: UserPreferencesStore;
       trayIcons: ReadableStore<Record<`${number}#${string}`, TrayIconProcess>>;
       constructor(handler: ProcessHandler, pid: number, parentPid: number, _: AppProcessData);
+      start(): Promise<false | undefined>;
       createTrayIcon(pid: number, identifier: string, options: TrayIconOptions, process?: typeof TrayIconProcess): Promise<boolean>;
       disposeTrayIcon(pid: number, identifier: string): Promise<false | undefined>;
       disposeProcessTrayIcons(pid: number): void;
@@ -2231,8 +2422,9 @@ declare global {
   export class ShortcutPropertiesRuntime extends AppProcess {
       shortcutData: ReadableStore<ArcShortcut>;
       iconStore: Record<string, string>;
-      path: string;
+      path?: string;
       constructor(handler: ProcessHandler, pid: number, parentPid: number, app: AppProcessData, path: string, data: ArcShortcut);
+      start(): Promise<false | undefined>;
       save(): Promise<void>;
       goTarget(): Promise<void>;
       changeIcon(): Promise<void>;
@@ -2375,99 +2567,6 @@ declare global {
   }
 
   export const WallpaperApp: App;
-
-  export class BootScreenRuntime extends AppProcess {
-      progress: ReadableStore<boolean>;
-      status: ReadableStore<string>;
-      constructor(handler: ProcessHandler, pid: number, parentPid: number, app: AppProcessData);
-      begin(): Promise<void>;
-      startBooting(e?: KeyboardEvent): Promise<void>;
-  }
-
-  export const BootScreen: App;
-
-  export interface PageButton {
-      to?: number;
-      action?: () => Promise<void>;
-      caption: string;
-      suggested?: boolean;
-      disabled?: () => boolean | Promise<boolean>;
-  }
-
-  export interface PageButtonPage {
-      left?: PageButton;
-      previous: PageButton;
-      next: PageButton;
-  }
-
-  export type PageButtons = PageButtonPage[];
-
-  export class InitialSetupRuntime extends AppProcess {
-      pageNumber: ReadableStore<number>;
-      identityInfoValid: ReadableStore<boolean>;
-      newUsername: ReadableStore<string>;
-      password: ReadableStore<string>;
-      confirm: ReadableStore<string>;
-      email: ReadableStore<string>;
-      actionsDisabled: ReadableStore<boolean>;
-      showMainContent: ReadableStore<boolean>;
-      fullName: ReadableStore<string>;
-      server: ServerManager;
-      private token;
-      readonly pages: LegacyComponentType[];
-      readonly pageButtons: PageButtons;
-      constructor(handler: ProcessHandler, pid: number, parentPid: number, app: AppProcessData);
-      render(): Promise<void>;
-      licenseConfirmation(): Promise<void>;
-      viewLicense(): Promise<void>;
-      createAccount(): Promise<void>;
-      checkAccountActivation(): Promise<void>;
-      finish(): Promise<void>;
-  }
-
-  export const InitialSetupWizard: App;
-
-  export const ProfilePictures: {
-      [key: string]: string;
-  };
-
-  export const Wallpapers: {
-      [key: string]: Wallpaper;
-  };
-
-  export interface LoginAppProps {
-      userDaemon?: UserDaemon;
-      type?: string;
-      safeMode?: boolean;
-  }
-
-  export class LoginAppRuntime extends AppProcess {
-      DEFAULT_WALLPAPER: ReadableStore<string>;
-      loadingStatus: ReadableStore<string>;
-      errorMessage: ReadableStore<string>;
-      profileImage: ReadableStore<string>;
-      profileName: ReadableStore<string>;
-      loginBackground: ReadableStore<string>;
-      hideProfileImage: ReadableStore<boolean>;
-      serverInfo: ServerInfo | undefined;
-      unexpectedInvocation: boolean;
-      safeMode: boolean;
-      private type;
-      constructor(handler: ProcessHandler, pid: number, parentPid: number, app: AppProcessData, props?: LoginAppProps);
-      render(): Promise<void>;
-      proceed(username: string, password: string): Promise<void>;
-      startDaemon(token: string, username: string, info?: UserInfo): Promise<void>;
-      logoff(daemon: UserDaemon): Promise<void>;
-      shutdown(daemon?: UserDaemon): Promise<void>;
-      restart(daemon?: UserDaemon): Promise<void>;
-      private saveToken;
-      private loadToken;
-      private validateUserToken;
-      resetCookies(): void;
-      private askForTotp;
-  }
-
-  export const LoginApp: App;
 
   export class AdvSysSetRuntime extends AppProcess {
       currentTab: ReadableStore<string>;
@@ -3427,6 +3526,8 @@ declare global {
 
   export const BugReportsCreatorApp: App;
 
+  export const BugHuntAltMenu: (p: BugHuntRuntime) => ContextMenuItem[];
+
   export class BugHuntUserDataRuntime extends AppProcess {
       data: UserInfo;
       hljs: HLJSApi;
@@ -3500,28 +3601,6 @@ declare global {
   }
 
   export const CalculatorApp: App;
-
-  export function CameraAltMenu(runtime: CameraRuntime): ContextMenuItem[];
-
-  export class CameraRuntime extends AppProcess {
-      videoFeed: ReadableStore<HTMLVideoElement>;
-      canvas: ReadableStore<HTMLCanvasElement>;
-      stream: MediaStream | undefined;
-      devices: ReadableStore<MediaDeviceInfo[]>;
-      sourceSelect: ReadableStore<string>;
-      constructor(handler: ProcessHandler, pid: number, parentPid: number, app: AppProcessData);
-      render(): Promise<void>;
-      changeCamera(deviceId: string): Promise<void>;
-      Capture(): Promise<void>;
-      captureFailed(e: any): void;
-      cameraChangeFailed(e: any): void;
-      changeSaveLocation(): Promise<void>;
-      getSaveLocation(): Promise<any>;
-      onClose(): Promise<boolean>;
-      openFileLocation(): Promise<void>;
-  }
-
-  export const CameraApp: App;
 
   export const FileManagerApp: App;
 
@@ -3953,6 +4032,10 @@ declare global {
       moveItem(source: string, destination: string): Promise<boolean>;
       _sync(progress?: FilesystemProgressCallback): Promise<void>;
   }
+
+  export const Wallpapers: {
+      [key: string]: Wallpaper;
+  };
 
   export interface LoginActivity {
       authorId: string;
@@ -4791,6 +4874,8 @@ declare global {
       Confirm(title: string, message: string, no: string, yes: string, image?: string): Promise<unknown>;
       enableThirdParty(): Promise<void>;
       disableThirdParty(): Promise<void>;
+      pinApp(appId: string): Promise<void>;
+      unpinApp(appId: string): void;
   }
 
   export const installArcPkg: (d: UserDaemon) => FileHandler;
@@ -4888,20 +4973,29 @@ declare global {
 
   export function RegisteredProcess(process: RegisteredProcess): App;
 
-  export interface SearchItem {
-      caption: string;
-      action: (item?: SearchItem) => void;
-      image?: string;
-      description?: string;
+  export class ArcFindRuntime extends AppProcess {
+      private fileSystemIndex;
+      constructor(handler: ProcessHandler, pid: number, parentPid: number, app: AppProcessData);
+      start(): Promise<void>;
+      Search(query: string): Promise<{
+          id: string;
+          item: SearchItem;
+          refIndex: number;
+          score?: number;
+          matches?: ReadonlyArray<FuseResultMatch>;
+      }[]>;
+      getFilesystemSearchSupplier(preferences: UserPreferences): Promise<SearchItem[]>;
+      getAppSearchSupplier(preferences: UserPreferences): Promise<SearchItem[]>;
+      getFlatTree(): Promise<PathedFileEntry[]>;
   }
-
-  export type SearchProvider = () => Promise<SearchItem[]> | SearchItem[];
 
   export function ShellContextMenu(runtime: ShellRuntime): AppContextMenu;
 
   export const weatherMetadata: Record<number, WeatherMeta>;
 
   export const weatherClasses: Record<number, string>;
+
+  export const QuickSettings: QuickSetting[];
 
   export class ShellRuntime extends AppProcess {
       startMenuOpened: ReadableStore<boolean>;
@@ -4914,26 +5008,18 @@ declare global {
       SelectionIndex: ReadableStore<number>;
       FullscreenCount: ReadableStore<Record<string, number>>;
       openedTrayPopup: ReadableStore<string>;
-      trayHost: TrayHostRuntime;
+      trayHost?: TrayHostRuntime;
+      arcFind?: ArcFindRuntime;
       ready: ReadableStore<boolean>;
-      private fileSystemIndex;
       contextMenu: AppContextMenu;
       constructor(handler: ProcessHandler, pid: number, parentPid: number, app: AppProcessData);
+      start(): Promise<void>;
+      gotReadySignal(): Promise<void>;
       render(): Promise<void>;
       getWeather(): Promise<WeatherInformation>;
       pinApp(appId: string): Promise<void>;
       unpinApp(appId: string): void;
       deleteWorkspace(workspace: Workspace): Promise<void>;
-      Search(query: string): Promise<{
-          id: string;
-          item: SearchItem;
-          refIndex: number;
-          score?: number;
-          matches?: ReadonlyArray<FuseResultMatch>;
-      }[]>;
-      getFilesystemSearchSupplier(preferences: UserPreferences): Promise<SearchItem[]>;
-      getAppSearchSupplier(preferences: UserPreferences): Promise<SearchItem[]>;
-      getFlatTree(): Promise<PathedFileEntry[]>;
       MutateIndex(e: KeyboardEvent): void | -1;
       Trigger(result: SearchItem): Promise<void>;
       Submit(): void;
@@ -5018,6 +5104,8 @@ declare global {
       focusPid(pid: number): void;
       _renderTitlebar(process: AppProcess): HTMLDivElement | undefined;
       _renderAltMenu(process: AppProcess): HTMLDivElement;
+      _resizeGrabbers(process: AppProcess, window: HTMLDivElement): undefined;
+      _resizer(window: HTMLDivElement, resizer: WindowResizer): HTMLDivElement;
       remove(pid: number): Promise<void>;
       toggleMaximize(pid: number): void;
       updateDraggableDisabledState(pid: number, window: HTMLDivElement): void;
@@ -5094,11 +5182,131 @@ declare global {
       constructor(message: string);
   }
 
+  export class BootScreenRuntime extends AppProcess {
+      progress: ReadableStore<boolean>;
+      status: ReadableStore<string>;
+      constructor(handler: ProcessHandler, pid: number, parentPid: number, app: AppProcessData);
+      begin(): Promise<void>;
+      startBooting(e?: KeyboardEvent): Promise<void>;
+  }
+
+  export const BootScreen: App;
+
+  export interface PageButton {
+      to?: number;
+      action?: () => Promise<void>;
+      caption: string;
+      suggested?: boolean;
+      disabled?: () => boolean | Promise<boolean>;
+  }
+
+  export interface PageButtonPage {
+      left?: PageButton;
+      previous: PageButton;
+      next: PageButton;
+  }
+
+  export type PageButtons = PageButtonPage[];
+
+  export class InitialSetupRuntime extends AppProcess {
+      pageNumber: ReadableStore<number>;
+      identityInfoValid: ReadableStore<boolean>;
+      newUsername: ReadableStore<string>;
+      password: ReadableStore<string>;
+      confirm: ReadableStore<string>;
+      email: ReadableStore<string>;
+      actionsDisabled: ReadableStore<boolean>;
+      showMainContent: ReadableStore<boolean>;
+      fullName: ReadableStore<string>;
+      server: ServerManager;
+      private token;
+      readonly pages: LegacyComponentType[];
+      readonly pageButtons: PageButtons;
+      constructor(handler: ProcessHandler, pid: number, parentPid: number, app: AppProcessData);
+      render(): Promise<void>;
+      licenseConfirmation(): Promise<void>;
+      viewLicense(): Promise<void>;
+      createAccount(): Promise<void>;
+      checkAccountActivation(): Promise<void>;
+      finish(): Promise<void>;
+  }
+
+  export const InitialSetupWizard: App;
+
+  export const ProfilePictures: {
+      [key: string]: string;
+  };
+
+  export interface LoginAppProps {
+      userDaemon?: UserDaemon;
+      type?: string;
+      safeMode?: boolean;
+  }
+
+  export interface PersistenceInfo {
+      username: string;
+      profilePicture: string;
+      loginWallpaper?: string;
+  }
+
+  export class LoginAppRuntime extends AppProcess {
+      DEFAULT_WALLPAPER: ReadableStore<string>;
+      loadingStatus: ReadableStore<string>;
+      errorMessage: ReadableStore<string>;
+      profileImage: ReadableStore<string>;
+      profileName: ReadableStore<string>;
+      loginBackground: ReadableStore<string>;
+      hideProfileImage: ReadableStore<boolean>;
+      persistence: ReadableStore<PersistenceInfo | undefined>;
+      serverInfo: ServerInfo | undefined;
+      unexpectedInvocation: boolean;
+      safeMode: boolean;
+      private type;
+      constructor(handler: ProcessHandler, pid: number, parentPid: number, app: AppProcessData, props?: LoginAppProps);
+      render(): Promise<void>;
+      proceed(username: string, password: string): Promise<void>;
+      startDaemon(token: string, username: string, info?: UserInfo): Promise<void>;
+      logoff(daemon: UserDaemon): Promise<void>;
+      shutdown(daemon?: UserDaemon): Promise<void>;
+      restart(daemon?: UserDaemon): Promise<void>;
+      private saveToken;
+      private loadToken;
+      private validateUserToken;
+      resetCookies(): void;
+      private askForTotp;
+      loadPersistence(): void;
+      savePersistence(username: string, profilePicture: string, loginWallpaper?: string): void;
+      deletePersistence(): void;
+  }
+
+  export const LoginApp: App;
+
   export default function TurnedOff(): Promise<void>;
 
   export default function render(props: StateProps): Promise<void>;
 
   export default function render(props: StateProps): Promise<void>;
+
+  export class TerminalMode extends Process {
+      userDaemon?: UserDaemon;
+      target: HTMLDivElement;
+      term?: Terminal;
+      rl?: Readline;
+      arcTerm?: ArcTerminal;
+      constructor(handler: ProcessHandler, pid: number, parentPid: number, target: HTMLDivElement);
+      initializeTerminal(): Promise<void>;
+      proceed(username: string, password: string): Promise<false | void>;
+      start(): Promise<boolean | undefined>;
+      startDaemon(token: string, username: string, info?: UserInfo): Promise<void>;
+      private loadToken;
+      private validateUserToken;
+      resetCookies(): void;
+      loginPrompt(): Promise<boolean>;
+      private saveToken;
+      askForTotp(token: string): Promise<boolean>;
+  }
+
+  export default function render(_: StateProps, { stack, kernel }: StateRendererAccessors): Promise<void>;
 
   export default function render(props: StateProps): Promise<void>;
 
@@ -5603,6 +5811,8 @@ declare global {
   export const Logo: (m?: string) => string;
 
   export const set: Keyword;
+
+  export function scopeToScopeCaption(scope: string): string;
 
   export interface WeatherSearchResult {
       id: number;

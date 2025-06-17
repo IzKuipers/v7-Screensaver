@@ -4,6 +4,7 @@ const html = await loadHtml("html/body.html");
 const { ScreensaverTray } = await load("js/tray.js");
 
 class proc extends ThirdPartyAppProcess {
+  enable = true;
   EVENTS = [
     "click",
     "keydown",
@@ -59,6 +60,8 @@ class proc extends ThirdPartyAppProcess {
     this.userPreferences.subscribe((v) => {
       if (this._disposed) return;
 
+      this.enable = !!v.appPreferences.IzK_Screensaver.enable;
+
       if (previousToggleState !== v.appPreferences.IzK_Screensaver.enable) {
         previousToggleState = v.appPreferences.IzK_Screensaver.enable;
 
@@ -100,6 +103,7 @@ class proc extends ThirdPartyAppProcess {
     this.win.classList.remove("active");
 
     this.timeout = setTimeout(() => {
+      if (!this.enable) return;
       this.Log("Blanking");
       this.lockscreen();
       this.win.classList.add("active");
