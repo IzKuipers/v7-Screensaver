@@ -3,14 +3,17 @@
     "name": "Screensaver",
     "description": "Adds a screensaver to ArcOS",
     "author": "Izaak Kuipers",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "installLocation": "U:/Applications/IzK_Screensaver",
-    "appId": "IzK_Screensaver"
+    "appId": "IzK_Screensaver",
+    "store": {
+      "image": "icon.svg"
+    }
   },
   "outFile": "IzK_Screensaver.arc",
   "payloadDir": "src",
   "devPort": 3128,
-  "buildHash": "9efa6d1f",
+  "buildHash": "ed497741",
   "noHotRelaunch": false,
   "logLevel": "process"
 }
